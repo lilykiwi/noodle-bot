@@ -1,22 +1,33 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2019",
-    "outDir": "./build",
-    "sourceMap": false,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["src/*"],
-      "@util/*": ["src/util/*"],
-      "@types": ["src/types"],
-      "@command": ["src/util/Command.ts"]
-    }
- },
-  "typeRoots": [
-    "./node_modules/@types",
-    "./src/util/types"
+      "target": "ESNext",
+      "module": "commonjs",
+      "rootDir": "./src/",
+      "outDir": "./dist/",
+      "strict": true,
+      "moduleResolution": "node",
+      "importHelpers": true,
+      "experimentalDecorators": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true,
+      "forceConsistentCasingInFileNames": true,
+      "removeComments": true,
+      "typeRoots": [
+          "node_modules/@types"
+      ],
+      "sourceMap": false,
+      "baseUrl": "./"
+  },
+  "files": [
+      "src/index.ts"
+  ],
+  "include": [
+      "./**/*.ts"
   ],
   "exclude": [
-    "node_modules"
-  ]
-}
+      "node_modules",
+      "dist"
+  ],
+} 
