@@ -263,6 +263,11 @@ strtok3@^7.0.0:
     "@tokenizer/token" "^0.3.0"
     peek-readable "^5.0.0"
 
+tiny-json-http@^7.4.2:
+  version "7.4.2"
+  resolved "https://registry.yarnpkg.com/tiny-json-http/-/tiny-json-http-7.4.2.tgz#2948d7a7f650d69df65f10982f126b5c5520ce3d"
+  integrity sha512-+3ns4PfQTLaF69zGASkAfDoOEVmwYTXSDrU6VR93h317uFOW7evFzKa7Ih9JzPHiYSee3lUXHLAGhws2wFSexQ==
+
 token-types@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/token-types/-/token-types-5.0.1.tgz#aa9d9e6b23c420a675e55413b180635b86a093b4"
