@@ -1,42 +1,41 @@
-# Movie Bot
+# Noodle Bot
 
-This is my discord bot for movie night, currently fetches trigger/content warnings for a piece of media.
+## About
 
-## Setup
+This is a bot I'm working on to power my personal Discord server, written in typescript and using discord.js. This bot aims to implement features relating to movie night, such as event scheduling, content warnings, etc, as well as role-changes and various quality-of-life features that might be expected in a bot like this.
 
-This bot needs two keys to work
-- config.dttdKey - Does the Dog Die key
-- config.botKey - Discord bot key
+## Commands
 
-example .env file:
+### `/help`
 
-```env
-dtddKey=[key]
-botKey=[key]
-```
+I don't honestly know why I haven't removed this command yet. Oh well!
 
-## Usage
+### `/film [query: string]`
 
-typing `$film` in a channel the bot can access will give a help readout. `$film [string]` will search for a film with a given name, whereas `$film [int]` will fetch the tags of a given film in the DtDD database. 
+This command searches for films on [Does the Dog Die](https://www.doesthedogdie.com/), presenting all of the results in a dropdown. Clicking on a dropdown then refreshes the reply with a list of the top 25 categories, implying the film contains material that deserves a content warning. This is useful if a film may contain content which may be disturbing, triggering, upsetting, etc, and is used in the lead-up to movie nights (every Saturday, or more frequent if you're a nerd).
 
-example:
+## Quick Start
 
-```
-$film the french dispatch
-
-Search Results
-Reply with any result in bold for details on that movie:
-$film 40791
-The French Dispatch, 2020, 1092 ratings
-
-$film 40791
-
-Search Results for The French Dispatch
-Is there a dead animal
-15+, 3-
-Does someone abuse alcohol
-15+, 0-
-Is there addiction
-9+, 2-
-... etc
-```
+0. Set up a bot at [https://discord.com/developers/applications](https://discord.com/developers/applications) and grab the Token and AppID for later. The token is used for initialising the client, and the AppID is used for registering slash commands.
+1. Register an account at [https://www.doesthedogdie.com/](https://www.doesthedogdie.com/) and grab the API Key from your profile section. This is used for fetching content warning data about films.
+2. Clone this repo
+    ```bash
+    $ git clone https://github.com/lilykiwi/movie-bot
+    ```
+3. Install the dependencies
+    ```bash
+    $ yarn install
+    ```
+4. Setup the bot
+    ```ts
+    // ./.env
+    // see the 'Environment Variables' section for more info
+    TOKEN=[bot token]
+    APPID=[bot app id]
+    DDTDTOKEN=[does the dog die user token]
+    ```
+5. Start the bot!
+    ```bash
+    $ yarn tsc 
+    $ node build/index.js
+    ```
