@@ -20,11 +20,11 @@ This command searches for films on [Does the Dog Die](https://www.doesthedogdie.
 1. Register an account at [https://www.doesthedogdie.com/](https://www.doesthedogdie.com/) and grab the API Key from your profile section. This is used for fetching content warning data about films.
 2. Clone this repo
     ```bash
-    $ git clone https://github.com/lilykiwi/movie-bot
+    git clone https://github.com/lilykiwi/noodle-bot
     ```
 3. Install the dependencies
     ```bash
-    $ yarn install
+    yarn
     ```
 4. Setup the bot
     ```ts
@@ -36,6 +36,6 @@ This command searches for films on [Does the Dog Die](https://www.doesthedogdie.
     ```
 5. Start the bot!
     ```bash
-    $ yarn tsc 
-    $ node build/index.js
+    yarn tsc 
+    node build/index.js
     ```
