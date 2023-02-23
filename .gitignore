@@ -112,3 +112,6 @@ dist
 build
 .idea
 src/cmds/test.ts
+
+# lock files because merge conflicts annoy me
+yarn.lock

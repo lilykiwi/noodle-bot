@@ -1,16 +1,15 @@
 {
-  "name": "movie-bot",
-  "version": "1.0.0",
-  "main": "src/index.js",
+  "name": "noodle-bot",
+  "version": "0.1.0",
+  "main": "src/dist.js",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.7.1",
-    "dotenv": "^8.2.0",
-    "tiny-json-http": "^7.4.2",
-    "typescript": "^4.9.5"
+    "discord.js": "^14.7.1"
   },
   "devDependencies": {
     "@types/node": "^18.13.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "dotenv": "^8.2.0",
+    "typescript": "^4.9.5"
   }
 }
