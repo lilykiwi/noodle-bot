@@ -4,12 +4,14 @@
   "main": "src/dist.js",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.7.1"
+    "chalk": "^4.1.2",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "@types/node": "^18.13.0",
+    "eslint": "^8.34.0",
     "ts-node": "^10.9.1",
-    "dotenv": "^8.2.0",
     "typescript": "^4.9.5"
   }
 }
