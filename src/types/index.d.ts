@@ -1,4 +1,5 @@
 import {
+  ButtonInteraction,
   CacheType,
   ChatInputCommandInteraction,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
@@ -7,12 +8,7 @@ import {
 
 export type SlashCommand = {
   Builder: RESTPostAPIChatInputApplicationCommandsJSONBody;
-  InputCommandHandler?: (
-    interaction: ChatInputCommandInteraction
-  ) => Promise<void> | undefined;
-  StringSelectMenuHandler?: (
-    interaction: StringSelectMenuInteraction
-  ) => Promise<void> | undefined;
+  Handlers: Dict<string, (interaction: StringSelectMenuInteraction<CacheType>) => Promise<void>[]>
 };
 
 export interface DTDDSearchResponse {

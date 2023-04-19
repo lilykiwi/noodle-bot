@@ -6,12 +6,16 @@ import {
   REST,
   Routes,
   TextChannel,
-  Interaction,
   CacheType,
+  ButtonBuilder,
+  CommandInteractionOption,
+  ButtonInteraction,
+  BaseInteraction,
 } from "discord.js";
 import chalk from "chalk";
 import { commandList } from "./commands/_index";
 import { SlashCommand } from "./types";
+import { generateLogString } from "./logging/logging";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -21,70 +25,32 @@ client.once(Events.ClientReady, () => {
   console.log(chalk.green(`- Bot online! - ${dateString}`));
 });
 
-client.on(Events.InteractionCreate, async (interaction) => {
-  await generateLogString(interaction);
+client.on(
+  Events.InteractionCreate,
+  async (interaction: BaseInteraction<CacheType>) => {
+    await generateLogString(interaction);
 
-  if (interaction.isChatInputCommand()) {
-    commandList.forEach((element) => {
-      if (
-        interaction.commandName === element.Builder.name &&
-        element.InputCommandHandler
-      )
-        element.InputCommandHandler(interaction);
-    });
+    if (interaction.isChatInputCommand()) {
+      commandList.forEach((element) => {
+        if (element.Handlers[interaction.commandName]) {
+          element.Handlers[interaction.commandName](interaction);
+        }
+      });
+    }
+
+    if (
+      interaction.isStringSelectMenu() ||
+      interaction.isRoleSelectMenu() ||
+      interaction.isButton()
+    ) {
+      commandList.forEach((element) => {
+        if (element.Handlers[interaction.customId]) {
+          element.Handlers[interaction.customId](interaction);
+        }
+      });
+    }
   }
-
-  if (interaction.isStringSelectMenu()) {
-    commandList.forEach((element) => {
-      if (
-        interaction.customId === element.Builder.name &&
-        element.StringSelectMenuHandler
-      )
-        element.StringSelectMenuHandler(interaction);
-    });
-  }
-});
-
-async function generateLogString(interaction: Interaction) {
-  let subjectId,
-    message,
-    channelString,
-    query,
-    user = `@${interaction.user.username}#${interaction.user.discriminator}`,
-    date = new Date();
-
-  if (interaction.channel?.isTextBased && interaction.guild) {
-    const channel = <TextChannel>await interaction.channel.fetch();
-    channelString = `${interaction.guild.name}/#${channel.name}`;
-  }
-
-  if (interaction.channel?.isDMBased && !interaction.guild) {
-    channelString = `Direct Message`;
-  }
-
-  if (interaction.isChatInputCommand()) {
-    subjectId = `/${interaction.commandName}`;
-    message = "command";
-    let queryString = interaction.options.getString("query");
-    if (queryString) subjectId += " " + queryString;
-  }
-
-  if (interaction.isStringSelectMenu()) {
-    subjectId = interaction.customId;
-    message = "select menu (string)";
-    if (interaction.values) subjectId += " " + interaction.values;
-  }
-
-  message = chalk.red(message);
-  user = chalk.green(user);
-  query = chalk.yellow(query);
-  channelString = chalk.bold.blue(channelString);
-  let dateString = chalk.cyan(date.getHours() + ":" + date.getMinutes());
-  subjectId = chalk.underline(subjectId);
-
-  console.log(`${dateString} ${message}: ${subjectId} ${query} from ${user}`);
-  console.log(`      -> in ${channelString}`);
-}
+);
 
 // import tokens from dotenv
 require("dotenv").config();

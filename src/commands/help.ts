@@ -11,10 +11,12 @@ export const help: SlashCommand = {
     .setDescription("Print help on how to use this bot")
     .toJSON(),
 
-  InputCommandHandler: async (
-    interaction: ChatInputCommandInteraction
-  ) => {
-    await interaction.deferReply();
-    await interaction.editReply("Read the slash commands you dork!");
-  },
+    Handlers: {
+      "help": async (
+        interaction: ChatInputCommandInteraction
+      ) => {
+        await interaction.deferReply();
+        await interaction.editReply("Read the slash commands you dork!");
+      },
+    }
 };
