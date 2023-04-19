@@ -123,7 +123,6 @@ export const film: SlashCommand = {
           let query = interaction.values[0];
           let resp = await fetch("https://www.doesthedogdie.com/media/" + query, {
             method: "GET",
-            cache: "no-cache",
             headers: DDTDheaders,
           });
           let response = <DTDDFilmResponse>await resp.json();
