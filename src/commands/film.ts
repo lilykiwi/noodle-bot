@@ -11,12 +11,13 @@ import {
   spoiler,
 } from "discord.js";
 import { SlashCommand, DTDDSearchResponse, DTDDFilmResponse } from "../types";
+import fetch from 'unfetch'
 
 let DDTDTOKEN: string = process.env.DDTDTOKEN!;
-let DDTDheaders = new Headers({
+let DDTDheaders = {
   Accept: "application/json",
   "X-API-KEY": DDTDTOKEN,
-});
+};
 
 export const film: SlashCommand = {
   Builder: new SlashCommandBuilder()
@@ -45,7 +46,6 @@ export const film: SlashCommand = {
           "https://www.doesthedogdie.com/dddsearch?q=" + query,
           {
             method: "GET",
-            cache: "no-cache",
             headers: DDTDheaders,
           }
         );
