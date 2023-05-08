@@ -11,7 +11,8 @@ import {
   spoiler,
 } from "discord.js";
 import { SlashCommand, DTDDSearchResponse, DTDDFilmResponse } from "../types";
-import fetch from 'unfetch'
+import fetch from 'node-fetch';
+
 
 let DDTDTOKEN: string = process.env.DDTDTOKEN!;
 let DDTDheaders = {
