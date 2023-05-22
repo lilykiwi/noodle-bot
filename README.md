@@ -6,10 +6,6 @@ This is a bot I'm working on to power my personal Discord server, written in typ
 
 ## Commands
 
-### `/help`
-
-I don't honestly know why I haven't removed this command yet. Oh well!
-
 ### `/film [query: string]`
 
 This command searches for films on [Does the Dog Die](https://www.doesthedogdie.com/), presenting all of the results in a dropdown. Clicking on a dropdown then refreshes the reply with a list of the top 25 categories, implying the film contains material that deserves a content warning. This is useful if a film may contain content which may be disturbing, triggering, upsetting, etc, and is used in the lead-up to movie nights (every Saturday, or more frequent if you're a nerd).

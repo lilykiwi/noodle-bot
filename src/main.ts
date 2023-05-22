@@ -5,11 +5,7 @@ import {
   RESTPostAPIChatInputApplicationCommandsJSONBody,
   REST,
   Routes,
-  TextChannel,
   CacheType,
-  ButtonBuilder,
-  CommandInteractionOption,
-  ButtonInteraction,
   BaseInteraction,
 } from "discord.js";
 import chalk from "chalk";
