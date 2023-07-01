@@ -1,33 +1,25 @@
-import {
-  Client,
-  Events,
-  GatewayIntentBits,
-  RESTPostAPIChatInputApplicationCommandsJSONBody,
-  REST,
-  Routes,
-  CacheType,
-  BaseInteraction,
-} from "discord.js";
+import * as discord from "discord.js";
 import chalk from "chalk";
-import { commandList } from "./commands/_index";
-import { SlashCommand } from "./types";
-import { generateLogString } from "./logging/logging";
+import * as commands from "./commands/index.js";
+import * as types from "./types";
+import * as logging from "./logging/logging.js";
+import * as dotenv from "dotenv";
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new discord.Client({ intents: [discord.GatewayIntentBits.Guilds] });
 
-client.once(Events.ClientReady, () => {
+client.once(discord.Events.ClientReady, () => {
   const date = new Date();
   const dateString = chalk.cyan(date.toLocaleString());
   console.log(chalk.green(`- Bot online! - ${dateString}`));
 });
 
 client.on(
-  Events.InteractionCreate,
-  async (interaction: BaseInteraction<CacheType>) => {
-    await generateLogString(interaction);
+  discord.Events.InteractionCreate,
+  async (interaction: discord.BaseInteraction<discord.CacheType>) => {
+    await logging.generateLogString(interaction);
 
     if (interaction.isChatInputCommand()) {
-      commandList.forEach((element) => {
+      commands.commandList.forEach((element) => {
         if (element.Handlers[interaction.commandName]) {
           element.Handlers[interaction.commandName](interaction);
         }
@@ -39,7 +31,7 @@ client.on(
       interaction.isRoleSelectMenu() ||
       interaction.isButton()
     ) {
-      commandList.forEach((element) => {
+      commands.commandList.forEach((element) => {
         if (element.Handlers[interaction.customId]) {
           element.Handlers[interaction.customId](interaction);
         }
@@ -49,13 +41,13 @@ client.on(
 );
 
 // import tokens from dotenv
-require("dotenv").config();
+dotenv.config();
 
 const TOKEN: string = process.env.TOKEN!;
 const APPID: string = process.env.APPID!;
 
-let commandsJSON: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
-commandList.forEach((command: SlashCommand) => {
+let commandsJSON: discord.RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+commands.commandList.forEach((command: types.SlashCommand) => {
   commandsJSON.push(command.Builder);
 });
 
@@ -63,14 +55,14 @@ commandList.forEach((command: SlashCommand) => {
 client.login(TOKEN);
 
 // Construct and prepare an instance of the REST module
-const rest = new REST({ version: "10" }).setToken(TOKEN);
+const rest = new discord.REST({ version: "10" }).setToken(TOKEN);
 
 // Deploy commands
 (async () => {
   try {
     console.log(`Refreshing ${chalk.bold(commandsJSON.length)} commands`);
     // fully refreshes all commands in the guild with the current set
-    await rest.put(Routes.applicationCommands(APPID), {
+    await rest.put(discord.Routes.applicationCommands(APPID), {
       body: commandsJSON,
     });
   } catch (error) {

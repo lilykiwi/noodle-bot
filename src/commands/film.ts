@@ -1,18 +1,6 @@
-import {
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-  CacheType,
-  EmbedBuilder,
-  SlashCommandStringOption,
-  ActionRowBuilder,
-  ButtonBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuInteraction,
-  spoiler,
-} from "discord.js";
-import { SlashCommand, DTDDSearchResponse, DTDDFilmResponse } from "../types";
-import fetch from 'node-fetch';
-
+import * as discord from "discord.js";
+import * as types from "../types";
+import * as fetch from "node-fetch";
 
 let DDTDTOKEN: string = process.env.DDTDTOKEN!;
 let DDTDheaders = {
@@ -20,12 +8,12 @@ let DDTDheaders = {
   "X-API-KEY": DDTDTOKEN,
 };
 
-export const film: SlashCommand = {
-  Builder: new SlashCommandBuilder()
+export const film: types.SlashCommand = {
+  Builder: new discord.SlashCommandBuilder()
     .setName("film")
     .setDescription("Search for a movie")
     .addStringOption(
-      new SlashCommandStringOption()
+      new discord.SlashCommandStringOption()
         .setName("query")
         .setDescription("The name of the movie to search for")
         .setRequired(true)
@@ -34,29 +22,29 @@ export const film: SlashCommand = {
 
     Handlers: {
       "film": async (
-        interaction: ChatInputCommandInteraction
+        interaction: discord.ChatInputCommandInteraction
       ) => {
         await interaction.deferReply();
         let query = interaction.options.getString("query");
     
-        let replyEmbed = new EmbedBuilder()
+        let replyEmbed = new discord.EmbedBuilder()
           .setColor("#96152c")
           .setTitle("Search Results");
     
-        let resp = await fetch(
+        let resp = await fetch.default(
           "https://www.doesthedogdie.com/dddsearch?q=" + query,
           {
             method: "GET",
             headers: DDTDheaders,
           }
         );
-        let response = <DTDDSearchResponse>await resp.json();
+        let response = <types.DTDDSearchResponse>await resp.json();
     
         if (response.items.length > 0) {
-          const row = new ActionRowBuilder<ButtonBuilder>();
-          const selectMenuRow = new ActionRowBuilder<StringSelectMenuBuilder>();
+          const row = new discord.ActionRowBuilder<discord.ButtonBuilder>();
+          const selectMenuRow = new discord.ActionRowBuilder<discord.StringSelectMenuBuilder>();
     
-          const selectMenu: StringSelectMenuBuilder = new StringSelectMenuBuilder()
+          const selectMenu: discord.StringSelectMenuBuilder = new discord.StringSelectMenuBuilder()
             .setCustomId("filmSelectID")
             .setPlaceholder(`${response.items.length} results found`);
     
@@ -116,18 +104,18 @@ export const film: SlashCommand = {
         }
       },
     
-      "filmSelectID": async (interaction: StringSelectMenuInteraction) => {
+      "filmSelectID": async (interaction: discord.StringSelectMenuInteraction) => {
         // defer so discord is happy
         await interaction.deferUpdate();
     
         if (interaction.values[0]) {
           // search DDTD for the specific movie, as we have an ID now.
           let query = interaction.values[0];
-          let resp = await fetch("https://www.doesthedogdie.com/media/" + query, {
+          let resp = await fetch.default("https://www.doesthedogdie.com/media/" + query, {
             method: "GET",
             headers: DDTDheaders,
           });
-          let response = <DTDDFilmResponse>await resp.json();
+          let response = <types.DTDDFilmResponse>await resp.json();
     
           let filmName = "";
           filmName = response.item.name.substring(0, 92);
@@ -136,7 +124,7 @@ export const film: SlashCommand = {
             filmName += "...";
           }
     
-          let replyEmbed = new EmbedBuilder()
+          let replyEmbed = new discord.EmbedBuilder()
             .setColor("#96152c")
             .setTitle(`${filmName} (${response.item.releaseYear})`)
             .setURL("https://www.doesthedogdie.com/media/" + query);
@@ -151,7 +139,7 @@ export const film: SlashCommand = {
               let topicName = "";
     
               if (element.topic.isSpoiler || element.topic.isSensitive) {
-                topicName = spoiler(`${element.topic.name}`);
+                topicName = discord.spoiler(`${element.topic.name}`);
               } else {
                 topicName = `${element.topic.name}`;
               }
@@ -180,7 +168,7 @@ export const film: SlashCommand = {
           // we shouldn't get here but just in case
           console.log("error: interaction.customId is null or something?");
     
-          let replyEmbed = new EmbedBuilder()
+          let replyEmbed = new discord.EmbedBuilder()
             .setColor("#96152c")
             .setTitle(`something broke lol`)
             .addFields({

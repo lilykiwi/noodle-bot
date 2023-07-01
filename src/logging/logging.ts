@@ -1,13 +1,8 @@
 import chalk from "chalk";
-import {
-  BaseInteraction,
-  CacheType,
-  CommandInteractionOption,
-  TextChannel,
-} from "discord.js";
+import * as discord from "discord.js";
 
 export async function generateLogString(
-  interaction: BaseInteraction<CacheType>
+  interaction: discord.BaseInteraction<discord.CacheType>
 ) {
   let channelName: string | undefined = "",
     commandString: string | undefined = "unknown (bug?)",
@@ -15,13 +10,13 @@ export async function generateLogString(
     args: string | string[] | undefined = "",
     user: string = `@${interaction.user.username}#${interaction.user.discriminator}`,
     date: Date = new Date(),
-    rawOptionsData: ReadonlyArray<CommandInteractionOption>;
+    rawOptionsData: ReadonlyArray<discord.CommandInteractionOption>;
 
   // get current channel/guild context and name
   // -> Direct Message or Guild/#channel
 
   if (interaction.channel?.isTextBased && interaction.guild) {
-    const channel = <TextChannel>await interaction.channel.fetch();
+    const channel = <discord.TextChannel>await interaction.channel.fetch();
     channelName = `${interaction.guild.name}/#${channel.name}`;
   }
 
@@ -113,7 +108,7 @@ export async function generateLogString(
   interactionType = chalk.red(interactionType);
   user = chalk.green(user);
   args = chalk.yellow(args);
-  channelName = chalk.bold.blue(channelName);
+  channelName = chalk.magenta(channelName);
   // i hate js
   let dateString = chalk.cyan(
     `${String(date.getHours()).padStart(2, "0")}:${String(
