@@ -66,9 +66,10 @@ export const film: SlashCommand = {
               let descriptionValue = "";
               let filmName = "";
               if (film.name) {
-                filmName = film.name.substring(0, 92);
-                if (film.name.length > 92) {
-                  filmName = film.name.substring(0, 89);
+                filmName = film.name.substring(0, 89);
+                // FIXME: truncate length is hardcoded here, should be calculated instead.
+                if (film.name.length > 89) {
+                  filmName = film.name.substring(0, 86);
                   filmName += "...";
                 }
               }
@@ -90,7 +91,7 @@ export const film: SlashCommand = {
           } catch (error) {
             console.log(error);
             await interaction.editReply(
-              "This operation failed! ping <@583325947022016523>"
+              "Something went wrong! ping <@583325947022016523>"
             );
           }
     
@@ -100,7 +101,7 @@ export const film: SlashCommand = {
           } catch (error) {
             console.log(error);
             await interaction.editReply(
-              "This operation failed! ping <@583325947022016523>"
+              "Something went wrong! ping <@583325947022016523>"
             );
           }
         }
@@ -143,12 +144,9 @@ export const film: SlashCommand = {
           let numResults = 0;
     
           if (response.topicItemStats.length > 0) {
-            for (
-              let index = 0;
-              index < Math.min(response.topicItemStats.length, 25);
-              index++
-            ) {
-              const element = response.topicItemStats[index];
+            let i = 0;
+            while (numResults < 25) {
+              const element = response.topicItemStats[i];
     
               let topicName = "";
     
@@ -165,6 +163,7 @@ export const film: SlashCommand = {
                 });
                 numResults++;
               }
+              i++;
             }
           }
     
