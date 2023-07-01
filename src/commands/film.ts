@@ -53,18 +53,21 @@ export const film: types.SlashCommand = {
               const film = response.items[index];
               let descriptionValue = "";
               let filmName = "";
+              if (film.releaseYear == "Unknown") {
+                film.releaseYear = "????";
+              }
               if (film.name) {
-                filmName = film.name.substring(0, 89);
+                filmName = film.name.substring(0, 19);
                 // FIXME: truncate length is hardcoded here, should be calculated instead.
-                if (film.name.length > 89) {
-                  filmName = film.name.substring(0, 86);
+                if (film.name.length > 19) {
+                  filmName = film.name.substring(0, 16);
                   filmName += "...";
                 }
               }
               if (film.overview) {
-                descriptionValue = film.overview.substring(0, 97);
-                if (film.overview.length > 97) {
-                  descriptionValue = film.overview.substring(0, 94);
+                descriptionValue = film.overview.substring(0, 100);
+                if (film.overview.length > 100) {
+                  descriptionValue = film.overview.substring(0, 97);
                   descriptionValue += "...";
                 }
               } else {
@@ -134,6 +137,9 @@ export const film: types.SlashCommand = {
           if (response.topicItemStats.length > 0) {
             let i = 0;
             while (numResults < 25) {
+              if (response.topicItemStats[i] === undefined) {
+                break;
+              }
               const element = response.topicItemStats[i];
     
               let topicName = "";
