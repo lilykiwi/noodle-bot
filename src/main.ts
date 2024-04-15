@@ -26,6 +26,15 @@ client.on(
       });
     }
 
+    // NOTE: this is a handler for DM messages, todo ig.
+    //if (interaction.channel?.isDMBased()) {
+    //  commands.commandList.forEach((element) => {
+    //    if (element.Handlers[interaction.commandName]) {
+    //      element.Handlers[interaction.commandName](interaction);
+    //    }
+    //  });
+    //}
+
     if (
       interaction.isStringSelectMenu() ||
       interaction.isRoleSelectMenu() ||
