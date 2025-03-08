@@ -32,7 +32,7 @@ export const film: types.SlashCommand = {
         .setTitle("Search Results");
 
       let resp = await fetch.default(
-        "https://www.doesthedogdie.com/dddsearch?q=" + query,
+        "https://www.doesthedogdie.com/dddsearch?q=" + encodeURI(query),
         {
           method: "GET",
           headers: DDTDheaders,
