@@ -155,12 +155,11 @@ async function filmSelectID(query: string, interaction: discord.ChatInputCommand
 export const film: types.SlashCommand = {
   Builder: new discord.SlashCommandBuilder()
     .setName("film")
-    .setDescription("Search for a movie")
+    .setDescription("Search for a movie (updated!)")
     .addStringOption(
       new discord.SlashCommandStringOption()
         .setName("query")
         .setDescription("The name of the movie to search for")
-        .setRequired(true)
     )
     .addStringOption(
       new discord.SlashCommandStringOption()
