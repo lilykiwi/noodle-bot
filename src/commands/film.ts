@@ -181,7 +181,23 @@ export const film: types.SlashCommand = {
       let query = interaction.options.getString("query");
       if (query != null) {
         filmSearch(query, interaction)
+        return
       }
+
+      // if we get here, the user didn't specify a query *or* a film id.
+      // we need to clear the deferred reply and complain at them
+
+      let replyEmbed = new discord.EmbedBuilder()
+        .setColor("#96152c")
+        .setTitle(`you dumb stupid idiot`)
+        .setURL("https://www.doesthedogdie.com/media/11135");
+
+      replyEmbed.addFields({
+        inline: false,
+        name: "No search term or film ID",
+        value: "You probably wanted to search or specify an ID?",
+      });
+      await interaction.editReply({ embeds: [replyEmbed] });
     },
     "filmSelectID": async (interaction: discord.StringSelectMenuInteraction) => {
       await interaction.deferUpdate();
