@@ -163,7 +163,7 @@ export const film: types.SlashCommand = {
     )
     .addStringOption(
       new discord.SlashCommandStringOption()
-        .setName("filmID")
+        .setName("filmid")
         .setDescription("The numeric ID of a known film, i.e. 960726. Will override query.")
     )
     .toJSON(),
@@ -172,7 +172,7 @@ export const film: types.SlashCommand = {
     "film": async (interaction: discord.ChatInputCommandInteraction) => {
       await interaction.deferReply();
 
-      let filmID = interaction.options.getString("filmID");
+      let filmID = interaction.options.getString("filmid");
       if (filmID != null) {
         filmSelectID(filmID, interaction)
         return
