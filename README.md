@@ -2,7 +2,7 @@
 
 ## About
 
-This is a bot I'm working on to power my personal Discord server, written in typescript and using discord.js. This bot aims to implement features relating to movie night, such as event scheduling, content warnings, etc, as well as role-changes and various quality-of-life features that might be expected in a bot like this.
+This is a bot I'm working on to power my personal Discord server, written in typescript and using discord.js. This bot aims to implement features relating to movie night, such as event scheduling, content warnings, etc, as various quality-of-life features that might be expected in a bot like this.
 
 ## Commands
 
@@ -15,23 +15,25 @@ This command searches for films on [Does the Dog Die](https://www.doesthedogdie.
 0. Set up a bot at [https://discord.com/developers/applications](https://discord.com/developers/applications) and grab the Token and AppID for later. The token is used for initialising the client, and the AppID is used for registering slash commands.
 1. Register an account at [https://www.doesthedogdie.com/](https://www.doesthedogdie.com/) and grab the API Key from your profile section. This is used for fetching content warning data about films.
 2. Clone this repo
-    ```bash
+    ```sh
     git clone https://github.com/lilykiwi/noodle-bot
     ```
 3. Install the dependencies
-    ```bash
-    yarn
+    ```sh
+    pnpm i
     ```
-4. Setup the bot
+4. Setup the bot env file. Take the `example` string out of the included `example.env` file, and populate with tokens/ids/etc.
     ```ts
     // ./.env
-    // see the 'Environment Variables' section for more info
     TOKEN=[bot token]
     APPID=[bot app id]
     DDTDTOKEN=[does the dog die user token]
     ```
 5. Start the bot!
-    ```bash
-    yarn tsc 
-    node build/index.js
+    ```sh
+    pnpm run start
     ```
+
+## Updating
+
+- `pnpm` version uses sha from: `corepack use pnpm@latest`

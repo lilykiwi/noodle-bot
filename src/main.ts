@@ -58,7 +58,8 @@ dotenv.config()
 const TOKEN: string = process.env.TOKEN!
 const APPID: string = process.env.APPID!
 
-let commandsJSON: discord.RESTPostAPIChatInputApplicationCommandsJSONBody[] = []
+const commandsJSON: discord.RESTPostAPIChatInputApplicationCommandsJSONBody[] =
+  []
 commands.commandList.forEach((command: types.SlashCommand) => {
   console.log(`- found command ${chalk.cyan(command.Builder.name)}`)
   commandsJSON.push(command.Builder)
@@ -98,6 +99,7 @@ async function prompt() {
         console.log(chalk.red('Killing client...'))
         client.destroy()
         process.exit()
+        break
       default:
         prompt()
         return

@@ -1,8 +1,8 @@
 import * as discord from 'discord.js'
 import * as types from '../types'
 
-let DDTDTOKEN: string = process.env.DDTDTOKEN!
-let DDTDheaders = {
+const DDTDTOKEN: string = process.env.DDTDTOKEN!
+const DDTDheaders = {
   Accept: 'application/json',
   'X-API-KEY': DDTDTOKEN,
 }
@@ -13,21 +13,21 @@ async function filmSearch(
     | discord.ChatInputCommandInteraction
     | discord.StringSelectMenuInteraction
 ) {
-  let replyEmbed = new discord.EmbedBuilder()
+  const replyEmbed = new discord.EmbedBuilder()
     .setColor('#96152c')
     .setTitle('Search Results')
 
-  let resp = await fetch(
+  const resp = await fetch(
     'https://www.doesthedogdie.com/dddsearch?q=' + encodeURI(query),
     {
       method: 'GET',
       headers: DDTDheaders,
     }
   )
-  let response = <types.DTDDSearchResponse>await resp.json()
+  const response = <types.DTDDSearchResponse>await resp.json()
 
   if (response.items.length > 0) {
-    const row = new discord.ActionRowBuilder<discord.ButtonBuilder>()
+    //const row = new discord.ActionRowBuilder<discord.ButtonBuilder>()
     const selectMenuRow =
       new discord.ActionRowBuilder<discord.StringSelectMenuBuilder>()
 
@@ -101,14 +101,14 @@ async function filmSelectID(
     | discord.ChatInputCommandInteraction
     | discord.StringSelectMenuInteraction
 ) {
-  let resp = await fetch(
+  const resp = await fetch(
     'https://www.doesthedogdie.com/media/' + encodeURI(query),
     {
       method: 'GET',
       headers: DDTDheaders,
     }
   )
-  let response = <types.DTDDFilmResponse>await resp.json()
+  const response = <types.DTDDFilmResponse>await resp.json()
 
   let filmName = ''
   filmName = response.item.name.substring(0, 92)
@@ -117,7 +117,7 @@ async function filmSelectID(
     filmName += '...'
   }
 
-  let replyEmbed = new discord.EmbedBuilder()
+  const replyEmbed = new discord.EmbedBuilder()
     .setColor('#96152c')
     .setTitle(`${filmName} (${response.item.releaseYear})`)
     .setURL('https://www.doesthedogdie.com/media/' + encodeURI(query))
@@ -185,13 +185,13 @@ export const film: types.SlashCommand = {
     film: async (interaction: discord.ChatInputCommandInteraction) => {
       await interaction.deferReply()
 
-      let filmID = interaction.options.getString('filmid')
+      const filmID = interaction.options.getString('filmid')
       if (filmID != null) {
         filmSelectID(filmID, interaction)
         return
       }
 
-      let query = interaction.options.getString('query')
+      const query = interaction.options.getString('query')
       if (query != null) {
         filmSearch(query, interaction)
         return
@@ -200,7 +200,7 @@ export const film: types.SlashCommand = {
       // if we get here, the user didn't specify a query *or* a film id.
       // we need to clear the deferred reply and complain at them
 
-      let replyEmbed = new discord.EmbedBuilder()
+      const replyEmbed = new discord.EmbedBuilder()
         .setColor('#96152c')
         .setTitle(`you dumb stupid idiot`)
         .setURL('https://www.doesthedogdie.com/media/11135')
@@ -214,7 +214,7 @@ export const film: types.SlashCommand = {
     },
     filmSelectID: async (interaction: discord.StringSelectMenuInteraction) => {
       await interaction.deferUpdate()
-      let filmID = interaction.values[0]
+      const filmID = interaction.values[0]
 
       filmSelectID(filmID, interaction)
     },

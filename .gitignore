@@ -111,5 +111,3 @@ dist
 # Other things
 build
 .idea
-
-.yarn/
