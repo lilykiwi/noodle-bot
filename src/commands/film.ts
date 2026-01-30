@@ -1,4 +1,13 @@
-import * as discord from 'discord.js'
+import {
+  ChatInputCommandInteraction,
+  ContainerBuilder,
+  MessageFlags,
+  SlashCommandBuilder,
+  SlashCommandStringOption,
+  spoiler,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
+} from 'discord.js'
 import * as types from '../types'
 
 const DDTDTOKEN: string = process.env.DDTDTOKEN!
@@ -7,15 +16,17 @@ const DDTDheaders = {
   'X-API-KEY': DDTDTOKEN,
 }
 
+interface IWarning {
+  yesSum: number
+  noSum: number
+  topicName: string
+}
+
 async function filmSearch(
   query: string,
-  interaction:
-    | discord.ChatInputCommandInteraction
-    | discord.StringSelectMenuInteraction
+  interaction: ChatInputCommandInteraction | StringSelectMenuInteraction
 ) {
-  const replyEmbed = new discord.EmbedBuilder()
-    .setColor('#96152c')
-    .setTitle('Search Results')
+  const reply = new ContainerBuilder().setAccentColor(0x0099ff)
 
   const resp = await fetch(
     'https://www.doesthedogdie.com/dddsearch?q=' + encodeURI(query),
@@ -27,14 +38,17 @@ async function filmSearch(
   const response = <types.DTDDSearchResponse>await resp.json()
 
   if (response.items.length > 0) {
-    //const row = new discord.ActionRowBuilder<discord.ButtonBuilder>()
-    const selectMenuRow =
-      new discord.ActionRowBuilder<discord.StringSelectMenuBuilder>()
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('filmSelectID')
+      .setPlaceholder(`${response.items.length} results found`)
 
-    const selectMenu: discord.StringSelectMenuBuilder =
-      new discord.StringSelectMenuBuilder()
-        .setCustomId('filmSelectID')
-        .setPlaceholder(`${response.items.length} results found`)
+    reply
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent('Click one of these and then submit to fetch!')
+      )
+      .addActionRowComponents((actionRow) =>
+        actionRow.setComponents(selectMenu)
+      )
 
     try {
       for (let index = 0; index < response.items.length; index++) {
@@ -75,8 +89,10 @@ async function filmSearch(
     }
 
     try {
-      selectMenuRow.addComponents(selectMenu)
-      await interaction.editReply({ components: [selectMenuRow] })
+      await interaction.editReply({
+        components: [reply],
+        flags: MessageFlags.IsComponentsV2,
+      })
     } catch (error) {
       console.log(error)
       await interaction.editReply(
@@ -86,20 +102,24 @@ async function filmSearch(
   }
 
   if (response.items.length == 0) {
-    replyEmbed.addFields({
-      inline: false,
-      name: 'No results found',
-      value: 'Try another search term maybe?',
+    reply
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent('### No results found!')
+      )
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent('Try another search term maybe?')
+      )
+
+    await interaction.editReply({
+      components: [reply],
+      flags: MessageFlags.IsComponentsV2,
     })
-    await interaction.editReply({ embeds: [replyEmbed] })
   }
 }
 
 async function filmSelectID(
   query: string,
-  interaction:
-    | discord.ChatInputCommandInteraction
-    | discord.StringSelectMenuInteraction
+  interaction: ChatInputCommandInteraction | StringSelectMenuInteraction
 ) {
   const resp = await fetch(
     'https://www.doesthedogdie.com/media/' + encodeURI(query),
@@ -117,63 +137,76 @@ async function filmSelectID(
     filmName += '...'
   }
 
-  const replyEmbed = new discord.EmbedBuilder()
-    .setColor('#96152c')
-    .setTitle(`${filmName} (${response.item.releaseYear})`)
-    .setURL('https://www.doesthedogdie.com/media/' + encodeURI(query))
+  const reply = new ContainerBuilder().setAccentColor(0x0099ff)
 
-  let numResults = 0
+  reply
+    .addTextDisplayComponents((textDisplay) =>
+      textDisplay.setContent(
+        `# [${filmName} (${response.item.releaseYear})](${'https://www.doesthedogdie.com/media/' + encodeURI(query)})`
+      )
+    )
+    .addSeparatorComponents((separator) => separator)
+
+  const warnings: Array<IWarning> = []
 
   if (response.topicItemStats.length > 0) {
-    let i = 0
-    while (numResults < 25) {
-      if (response.topicItemStats[i] === undefined) {
-        break
-      }
-      const element = response.topicItemStats[i]
-
+    response.topicItemStats.forEach((element) => {
       let topicName = ''
 
       // quick hack to prevent any spoilers
-      if (element.topic.isSpoiler || element.topic.isSensitive) {
-        topicName = ':warning: ' + discord.spoiler(`${element.topic.name}`)
-      } else {
-        topicName = discord.spoiler(`${element.topic.name}`)
-      }
+
+      topicName = `${element.topic.name}`
       if (element.yesSum > element.noSum) {
-        replyEmbed.addFields({
-          inline: true,
-          name: topicName,
-          value: `${element.yesSum}+ ${element.noSum}-`,
+        warnings.push({
+          yesSum: element.yesSum,
+          noSum: element.noSum,
+          topicName: topicName,
         })
-        numResults++
       }
-      i++
-    }
-  }
-
-  if (numResults < 1) {
-    replyEmbed.addFields({
-      inline: false,
-      name: 'Nobody has added any votes for this film!',
-      value: `oops`,
     })
+
+    // messy sort lol
+    const sortedWarnings = warnings.sort((a, b) => {
+      if (a.yesSum > b.yesSum) {
+        return -1
+      }
+      if (a.yesSum < b.yesSum) {
+        return 1
+      }
+      return 0
+    })
+    let output = ''
+    sortedWarnings.forEach((element) => {
+      output += `1. ${element.topicName}  \`${element.yesSum}+, ${element.noSum}-\`\n`
+    })
+    reply.addTextDisplayComponents((textDisplay) =>
+      textDisplay.setContent(spoiler(output))
+    )
   }
 
-  await interaction.editReply({ embeds: [replyEmbed], components: [] })
+  if (response.topicItemStats.length < 1) {
+    reply.addTextDisplayComponents((textDisplay) =>
+      textDisplay.setContent(`Nobody has added any votes for this film!`)
+    )
+  }
+
+  await interaction.editReply({
+    components: [reply],
+    flags: MessageFlags.IsComponentsV2,
+  })
 }
 
 export const film: types.SlashCommand = {
-  Builder: new discord.SlashCommandBuilder()
+  Builder: new SlashCommandBuilder()
     .setName('film')
     .setDescription('Search for a movie (updated!)')
     .addStringOption(
-      new discord.SlashCommandStringOption()
+      new SlashCommandStringOption()
         .setName('query')
         .setDescription('The name of the movie to search for')
     )
     .addStringOption(
-      new discord.SlashCommandStringOption()
+      new SlashCommandStringOption()
         .setName('filmid')
         .setDescription(
           'The numeric ID of a known film, i.e. 960726. Will override query.'
@@ -182,7 +215,7 @@ export const film: types.SlashCommand = {
     .toJSON(),
 
   Handlers: {
-    film: async (interaction: discord.ChatInputCommandInteraction) => {
+    film: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply()
 
       const filmID = interaction.options.getString('filmid')
@@ -200,19 +233,19 @@ export const film: types.SlashCommand = {
       // if we get here, the user didn't specify a query *or* a film id.
       // we need to clear the deferred reply and complain at them
 
-      const replyEmbed = new discord.EmbedBuilder()
-        .setColor('#96152c')
-        .setTitle(`you dumb stupid idiot`)
-        .setURL('https://www.doesthedogdie.com/media/11135')
-
-      replyEmbed.addFields({
-        inline: false,
-        name: 'No search term or film ID',
-        value: 'You probably wanted to search or specify an ID?',
+      const reply = new ContainerBuilder()
+        .setAccentColor(0x0099ff)
+        .addTextDisplayComponents((textDisplay) =>
+          textDisplay.setContent(
+            'No search term or film ID. You probably wanted to search or specify an ID?'
+          )
+        )
+      await interaction.editReply({
+        components: [reply],
+        flags: MessageFlags.IsComponentsV2,
       })
-      await interaction.editReply({ embeds: [replyEmbed] })
     },
-    filmSelectID: async (interaction: discord.StringSelectMenuInteraction) => {
+    filmSelectID: async (interaction: StringSelectMenuInteraction) => {
       await interaction.deferUpdate()
       const filmID = interaction.values[0]
 
