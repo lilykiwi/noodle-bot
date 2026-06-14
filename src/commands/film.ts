@@ -9,6 +9,7 @@ import {
   StringSelectMenuInteraction,
 } from 'discord.js'
 import * as types from '../types'
+import chalk from 'chalk'
 
 const DDTDTOKEN: string = process.env.DDTDTOKEN!
 const DDTDheaders = {
@@ -16,7 +17,7 @@ const DDTDheaders = {
   'X-API-KEY': DDTDTOKEN,
 }
 
-interface IWarning {
+interface IIAmRenamingThisToAnnoyWam {
   yesSum: number
   noSum: number
   topicName: string
@@ -29,13 +30,15 @@ async function filmSearch(
   const reply = new ContainerBuilder().setAccentColor(0x0099ff)
 
   const resp = await fetch(
-    'https://www.doesthedogdie.com/dddsearch?q=' + encodeURI(query),
+    'https://www.doesthedogdie.com/api/v3/items?q=' + encodeURI(query),
     {
       method: 'GET',
       headers: DDTDheaders,
     }
   )
   const response = <types.DTDDSearchResponse>await resp.json()
+
+  console.log(chalk.green(`response`))
 
   if (response.items.length > 0) {
     const selectMenu = new StringSelectMenuBuilder()
@@ -147,7 +150,7 @@ async function filmSelectID(
     )
     .addSeparatorComponents((separator) => separator)
 
-  const warnings: Array<IWarning> = []
+  const warnings: Array<IIAmRenamingThisToAnnoyWam> = []
 
   if (response.topicItemStats.length > 0) {
     response.topicItemStats.forEach((element) => {

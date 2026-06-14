@@ -37,3 +37,4 @@ This command searches for films on [Does the Dog Die](https://www.doesthedogdie.
 ## Updating
 
 - `pnpm` version uses sha from: `corepack use pnpm@latest`
+- `pm2` quick start: `pm2 start "pnpm start" --name "noodle-bot"`
