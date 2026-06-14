@@ -36,9 +36,9 @@ async function filmSearch(
       headers: DDTDheaders,
     }
   )
-  const response = <types.DTDDSearchResponse>await resp.json()
 
-  console.log(chalk.green(`response`))
+  console.log(chalk.green(resp.text()))
+  const response = <types.DTDDSearchResponse>await resp.json()
 
   if (response.items.length > 0) {
     const selectMenu = new StringSelectMenuBuilder()
