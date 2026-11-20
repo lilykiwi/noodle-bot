@@ -1,9 +1,8 @@
 import * as discord from 'discord.js'
 import chalk from 'chalk'
 import * as commands from './commands/index.js'
-import * as types from './types'
+import type * as types from './types/index.js'
 import * as logging from './logging/logging.js'
-import * as dotenv from 'dotenv'
 import readline from 'node:readline'
 
 const client = new discord.Client({
@@ -51,9 +50,6 @@ client.on(
     }
   }
 )
-
-// import tokens from dotenv
-dotenv.config()
 
 const TOKEN: string = process.env.TOKEN!
 const APPID: string = process.env.APPID!

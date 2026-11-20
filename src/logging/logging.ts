@@ -9,8 +9,8 @@ export async function generateLogString(
     interactionType: string | undefined = '',
     args: string | string[] | undefined = '',
     user: string = `@${interaction.user.username}#${interaction.user.discriminator}`,
-    date: Date = new Date(),
     rawOptionsData: ReadonlyArray<discord.CommandInteractionOption>
+  const date = new Date()
 
   // get current channel/guild context and name
   // -> Direct Message or Guild/#channel
@@ -28,7 +28,6 @@ export async function generateLogString(
 
   if (interaction.isAutocomplete()) {
     // do not log for this; this happens whenever someone types and pauses
-    interactionType = 'AutocompleteInteraction'
     return
   }
 
@@ -110,7 +109,7 @@ export async function generateLogString(
   args = chalk.yellow(args)
   channelName = chalk.magenta(channelName)
   // i hate js
-  let dateString = chalk.cyan(
+  const dateString = chalk.cyan(
     `${String(date.getHours()).padStart(2, '0')}:${String(
       date.getMinutes()
     ).padStart(2, '0')}`

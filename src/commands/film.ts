@@ -8,195 +8,111 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuInteraction,
 } from 'discord.js'
-import * as types from '../types'
-import chalk from 'chalk'
+import type * as types from '../types/index.js'
+import * as dtdd from '../dtdd/api.js'
+import {
+  ATTRIBUTION,
+  buildSearchOptions,
+  describeError,
+  formatWarnings,
+  formatYear,
+  getWarnings,
+  truncate,
+} from './filmFormat.js'
 
-const DDTDTOKEN: string = process.env.DDTDTOKEN!
-const DDTDheaders = {
-  Accept: 'application/json',
-  'X-API-KEY': DDTDTOKEN,
-}
+type FilmInteraction = ChatInputCommandInteraction | StringSelectMenuInteraction
 
-interface IIAmRenamingThisToAnnoyWam {
-  yesSum: number
-  noSum: number
-  topicName: string
-}
+const ACCENT = 0x0099ff
 
-async function filmSearch(
-  query: string,
-  interaction: ChatInputCommandInteraction | StringSelectMenuInteraction
+// read lazily so env is always current (bun loads .env automatically)
+const dtddOptions = (): dtdd.DTDDOptions => ({
+  apiKey: process.env.DDTDTOKEN ?? '',
+})
+
+async function sendContainer(
+  interaction: FilmInteraction,
+  container: ContainerBuilder
 ) {
-  const reply = new ContainerBuilder().setAccentColor(0x0099ff)
-
-  const resp = await fetch(
-    'https://www.doesthedogdie.com/api/v3/items?q=' + encodeURI(query),
-    {
-      method: 'GET',
-      headers: DDTDheaders,
-    }
-  )
-
-  console.log(chalk.green(resp.text()))
-  const response = <types.DTDDSearchResponse>await resp.json()
-
-  if (response.items.length > 0) {
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('filmSelectID')
-      .setPlaceholder(`${response.items.length} results found`)
-
-    reply
-      .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent('Click one of these and then submit to fetch!')
-      )
-      .addActionRowComponents((actionRow) =>
-        actionRow.setComponents(selectMenu)
-      )
-
-    try {
-      for (let index = 0; index < response.items.length; index++) {
-        const film = response.items[index]
-        let descriptionValue = ''
-        let filmName = ''
-        if (film.releaseYear == 'Unknown') {
-          film.releaseYear = '????'
-        }
-        if (film.name) {
-          filmName = film.name.substring(0, 19)
-          // FIXME: truncate length is hardcoded here, should be calculated instead.
-          if (film.name.length > 19) {
-            filmName = film.name.substring(0, 16)
-            filmName += '...'
-          }
-        }
-        if (film.overview) {
-          descriptionValue = film.overview.substring(0, 100)
-          if (film.overview.length > 100) {
-            descriptionValue = film.overview.substring(0, 97)
-            descriptionValue += '...'
-          }
-        } else {
-          descriptionValue = 'no description provided'
-        }
-        selectMenu.addOptions({
-          label: `${filmName} (${film.releaseYear})`,
-          description: `${descriptionValue}`,
-          value: `${film.id}`,
-        })
-      }
-    } catch (error) {
-      console.log(error)
-      await interaction.editReply(
-        'Something went wrong! ping <@583325947022016523>'
-      )
-    }
-
-    try {
-      await interaction.editReply({
-        components: [reply],
-        flags: MessageFlags.IsComponentsV2,
-      })
-    } catch (error) {
-      console.log(error)
-      await interaction.editReply(
-        'Something went wrong! ping <@583325947022016523>'
-      )
-    }
-  }
-
-  if (response.items.length == 0) {
-    reply
-      .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent('### No results found!')
-      )
-      .addTextDisplayComponents((textDisplay) =>
-        textDisplay.setContent('Try another search term maybe?')
-      )
-
-    await interaction.editReply({
-      components: [reply],
-      flags: MessageFlags.IsComponentsV2,
-    })
-  }
-}
-
-async function filmSelectID(
-  query: string,
-  interaction: ChatInputCommandInteraction | StringSelectMenuInteraction
-) {
-  const resp = await fetch(
-    'https://www.doesthedogdie.com/media/' + encodeURI(query),
-    {
-      method: 'GET',
-      headers: DDTDheaders,
-    }
-  )
-  const response = <types.DTDDFilmResponse>await resp.json()
-
-  let filmName = ''
-  filmName = response.item.name.substring(0, 92)
-  if (response.item.name.length > 92) {
-    filmName = response.item.name.substring(0, 89)
-    filmName += '...'
-  }
-
-  const reply = new ContainerBuilder().setAccentColor(0x0099ff)
-
-  reply
-    .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(
-        `# [${filmName} (${response.item.releaseYear})](${'https://www.doesthedogdie.com/media/' + encodeURI(query)})`
-      )
-    )
-    .addSeparatorComponents((separator) => separator)
-
-  const warnings: Array<IIAmRenamingThisToAnnoyWam> = []
-
-  if (response.topicItemStats.length > 0) {
-    response.topicItemStats.forEach((element) => {
-      let topicName = ''
-
-      // quick hack to prevent any spoilers
-
-      topicName = `${element.topic.name}`
-      if (element.yesSum > element.noSum) {
-        warnings.push({
-          yesSum: element.yesSum,
-          noSum: element.noSum,
-          topicName: topicName,
-        })
-      }
-    })
-
-    // messy sort lol
-    const sortedWarnings = warnings.sort((a, b) => {
-      if (a.yesSum > b.yesSum) {
-        return -1
-      }
-      if (a.yesSum < b.yesSum) {
-        return 1
-      }
-      return 0
-    })
-    let output = ''
-    sortedWarnings.forEach((element) => {
-      output += `1. ${element.topicName}  \`${element.yesSum}+, ${element.noSum}-\`\n`
-    })
-    reply.addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(spoiler(output))
-    )
-  }
-
-  if (response.topicItemStats.length < 1) {
-    reply.addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`Nobody has added any votes for this film!`)
-    )
-  }
-
   await interaction.editReply({
-    components: [reply],
+    components: [container],
     flags: MessageFlags.IsComponentsV2,
   })
+}
+
+async function sendError(interaction: FilmInteraction, error: unknown) {
+  console.error(error)
+  const reply = new ContainerBuilder()
+    .setAccentColor(0xff4444)
+    .addTextDisplayComponents((t) => t.setContent(describeError(error)))
+  try {
+    await sendContainer(interaction, reply)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function filmSearch(query: string, interaction: FilmInteraction) {
+  const items = await dtdd.searchItems(query, dtddOptions())
+  const reply = new ContainerBuilder().setAccentColor(ACCENT)
+
+  if (items.length == 0) {
+    reply
+      .addTextDisplayComponents((t) => t.setContent('### No results found!'))
+      .addTextDisplayComponents((t) =>
+        t.setContent('Try another search term maybe?')
+      )
+  } else {
+    const options = buildSearchOptions(items)
+    const placeholder =
+      items.length > options.length
+        ? `showing ${options.length} of ${items.length} results`
+        : `${items.length} results found`
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('filmSelectID')
+      .setPlaceholder(placeholder)
+      .addOptions(options)
+
+    reply
+      .addTextDisplayComponents((t) =>
+        t.setContent('Pick one of these to fetch its content warnings!')
+      )
+      .addActionRowComponents((row) => row.setComponents(selectMenu))
+  }
+
+  reply.addTextDisplayComponents((t) => t.setContent(ATTRIBUTION))
+  await sendContainer(interaction, reply)
+}
+
+async function filmSelectID(id: string, interaction: FilmInteraction) {
+  const item = await dtdd.getItem(id, dtddOptions())
+  const name = truncate(item.name, 92)
+
+  const reply = new ContainerBuilder()
+    .setAccentColor(ACCENT)
+    .addTextDisplayComponents((t) =>
+      t.setContent(
+        `# [${name} (${formatYear(item.releaseYear)})](${dtdd.itemPageUrl(item.id)})`
+      )
+    )
+    .addSeparatorComponents((s) => s)
+
+  const warnings = getWarnings(item.topicItemStats ?? [])
+  if (warnings.length > 0) {
+    reply.addTextDisplayComponents((t) =>
+      t.setContent(spoiler(formatWarnings(warnings)))
+    )
+  } else if ((item.topicItemStats ?? []).length > 0) {
+    reply.addTextDisplayComponents((t) =>
+      t.setContent('No topics have more yes votes than no votes!')
+    )
+  } else {
+    reply.addTextDisplayComponents((t) =>
+      t.setContent('Nobody has added any votes for this film!')
+    )
+  }
+
+  reply.addTextDisplayComponents((t) => t.setContent(ATTRIBUTION))
+  await sendContainer(interaction, reply)
 }
 
 export const film: types.SlashCommand = {
@@ -212,7 +128,7 @@ export const film: types.SlashCommand = {
       new SlashCommandStringOption()
         .setName('filmid')
         .setDescription(
-          'The numeric ID of a known film, i.e. 960726. Will override query.'
+          'The numeric ID of a known film, i.e. 10752. Will override query.'
         )
     )
     .toJSON(),
@@ -221,38 +137,40 @@ export const film: types.SlashCommand = {
     film: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply()
 
-      const filmID = interaction.options.getString('filmid')
-      if (filmID != null) {
-        filmSelectID(filmID, interaction)
-        return
-      }
+      try {
+        const filmID = interaction.options.getString('filmid')
+        if (filmID != null) {
+          await filmSelectID(filmID, interaction)
+          return
+        }
 
-      const query = interaction.options.getString('query')
-      if (query != null) {
-        filmSearch(query, interaction)
+        const query = interaction.options.getString('query')
+        if (query != null) {
+          await filmSearch(query, interaction)
+          return
+        }
+      } catch (error) {
+        await sendError(interaction, error)
         return
       }
 
       // if we get here, the user didn't specify a query *or* a film id.
-      // we need to clear the deferred reply and complain at them
-
       const reply = new ContainerBuilder()
-        .setAccentColor(0x0099ff)
-        .addTextDisplayComponents((textDisplay) =>
-          textDisplay.setContent(
+        .setAccentColor(ACCENT)
+        .addTextDisplayComponents((t) =>
+          t.setContent(
             'No search term or film ID. You probably wanted to search or specify an ID?'
           )
         )
-      await interaction.editReply({
-        components: [reply],
-        flags: MessageFlags.IsComponentsV2,
-      })
+      await sendContainer(interaction, reply)
     },
     filmSelectID: async (interaction: StringSelectMenuInteraction) => {
       await interaction.deferUpdate()
-      const filmID = interaction.values[0]
-
-      filmSelectID(filmID, interaction)
+      try {
+        await filmSelectID(interaction.values[0], interaction)
+      } catch (error) {
+        await sendError(interaction, error)
+      }
     },
   },
 }

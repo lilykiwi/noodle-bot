@@ -2,21 +2,26 @@
   "name": "noodle-bot",
   "version": "0.1.0",
   "type": "module",
-  "main": "src/dist.js",
+  "main": "src/main.ts",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^5.6.2",
-    "discord.js": "^14.25.1",
-    "dotenv": "^17.2.3"
+    "chalk": "^6.0.1",
+    "discord.js": "^14.28.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
-    "eslint": "^9.39.2",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "^1.4.4",
+    "eslint": "^10.15.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.73.0"
   },
   "scripts": {
-    "start": "pnpm tsc && node ./dist/main.js"
-  },
-  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264"
+    "start": "bun src/main.ts",
+    "dev": "bun --watch src/main.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "check": "bun run typecheck && bun run lint && bun test"
+  }
 }

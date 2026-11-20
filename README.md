@@ -2,7 +2,7 @@
 
 ## About
 
-This is a bot I'm working on to power my personal Discord server, written in typescript and using discord.js. This bot aims to implement features relating to movie night, such as event scheduling, content warnings, etc, as various quality-of-life features that might be expected in a bot like this.
+This is a bot I'm working on to power my personal Discord server, written in typescript, running on bun and using discord.js. This bot aims to implement features relating to movie night, such as event scheduling, content warnings, etc, as various quality-of-life features that might be expected in a bot like this.
 
 ## Commands
 
@@ -20,7 +20,7 @@ This command searches for films on [Does the Dog Die](https://www.doesthedogdie.
     ```
 3. Install the dependencies
     ```sh
-    pnpm i
+    bun install
     ```
 4. Setup the bot env file. Take the `example` string out of the included `example.env` file, and populate with tokens/ids/etc.
     ```ts
@@ -31,10 +31,20 @@ This command searches for films on [Does the Dog Die](https://www.doesthedogdie.
     ```
 5. Start the bot!
     ```sh
-    pnpm run start
+    bun start
     ```
+
+## Development
+
+```sh
+bun test         # run the tests once
+bun run dev      # run the bot, restart on save
+bun run check    # typecheck + lint + test
+```
+
+Note: the DTDD API (v3.0) needs a key created under "API keys" on your profile page; older user tokens get `app_key_not_permitted`. Free tier is 30 req/min, 5,000/month, and every reply shows the required "Powered by DoesTheDogDie.com" attribution.
 
 ## Updating
 
-- `pnpm` version uses sha from: `corepack use pnpm@latest`
-- `pm2` quick start: `pm2 start "pnpm start" --name "noodle-bot"`
+- update deps: `bun update`
+- `pm2` quick start: `pm2 start "bun start" --name "noodle-bot"`

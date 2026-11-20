@@ -1,33 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
+    "target": "ES2024",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
     "rootDir": "./src/",
-    "outDir": "./dist/",
     "strict": true,
-    "moduleResolution": "node",
-    "importHelpers": true,
-    "experimentalDecorators": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "sourceMap": false,
-    "baseUrl": "./"
+    "types": ["bun"],
+    "noEmit": true,
+    "sourceMap": false
   },
-  "files": [
-    "src/main.ts"
-  ],
-  "include": [
-    "./**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ],
-} 
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

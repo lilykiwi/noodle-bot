@@ -6,7 +6,7 @@ import {
   ContainerBuilder,
   UserSelectMenuBuilder,
 } from 'discord.js'
-import * as types from '../types'
+import type * as types from '../types/index.js'
 
 export const TextDisplayTest: types.SlashCommand = {
   Builder: new SlashCommandBuilder()
