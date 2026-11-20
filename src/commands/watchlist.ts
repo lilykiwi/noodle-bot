@@ -131,7 +131,7 @@ export const watchlist: types.SlashCommand = {
           interaction.user.id
         )
         const text = added
-          ? `added **${entryTitle(item)}** to the watchlist! 🍿`
+          ? `added **${entryTitle(item)}** to the watchlist!`
           : `**${entryTitle(item)}** is already on the watchlist!`
 
         const reply = new ContainerBuilder().setAccentColor(ACCENT)

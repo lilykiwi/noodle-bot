@@ -20,7 +20,7 @@ Picks a random film from the watchlist, with reroll and content warning buttons.
 
 ### `/movienight`
 
-A private setup wizard: pick Saturday or Sunday, whose pick it is, and a film from the watchlist. Creates a Discord scheduled event (the bot needs the **Create Events** permission), posts an announcement, and removes the film from the watchlist. Time, timezone and channel are configured in `.env` (see `example.env`).
+A private setup wizard: pick Saturday or Sunday (9pm by default) or any other day/time, whose pick it is, and a film from the watchlist or a search. Creates a Discord scheduled event (the bot needs the **Create Events** permission), posts an announcement, and removes the film from the watchlist if it was on it. Time, timezone and channel are configured in `.env` (see `example.env`).
 
 ## Quick Start
 

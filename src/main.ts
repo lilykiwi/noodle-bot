@@ -49,7 +49,8 @@ client.on(
       interaction.isStringSelectMenu() ||
       interaction.isRoleSelectMenu() ||
       interaction.isUserSelectMenu() ||
-      interaction.isButton()
+      interaction.isButton() ||
+      interaction.isModalSubmit()
     ) {
       // customIds can carry data after a colon, e.g. "pickReroll:10752"
       const key = interaction.customId.split(':')[0]

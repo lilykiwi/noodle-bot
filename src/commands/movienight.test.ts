@@ -5,6 +5,8 @@ import {
   discordTime,
   nextNight,
   nightConfigFromEnv,
+  parseTimeOfDay,
+  parseWhen,
   zonedTime,
   type NightConfig,
 } from './movienightTime.js'
@@ -12,10 +14,13 @@ import {
   announcement,
   confirmStep,
   dayStep,
+  entryFromItem,
   filmStep,
   orderForPicker,
   parseState,
   pickerStep,
+  searchStep,
+  whenToken,
 } from './movienightViews.js'
 
 const london: NightConfig = {
@@ -44,7 +49,7 @@ describe('nightConfigFromEnv', () => {
   it('reads env with sensible defaults', () => {
     expect(nightConfigFromEnv({ MOVIENIGHT_TZ: 'UTC' })).toEqual({
       timeZone: 'UTC',
-      hour: 20,
+      hour: 21,
       minute: 0,
       durationHours: 3,
     })
@@ -107,8 +112,8 @@ it('discordTime makes timestamp markup', () => {
 
 describe('parseState', () => {
   it('reads state back out of customIds', () => {
-    expect(parseState('mnDay:sat')).toEqual({ day: 'sat', picker: undefined, film: undefined })
-    expect(parseState('mnConfirm:sun:123:456')).toEqual({ day: 'sun', picker: '123', film: 456 })
+    expect(parseState('mnDay:sat')).toEqual({ day: 'sat', at: undefined, picker: undefined, film: undefined })
+    expect(parseState('mnConfirm:sun:123:456')).toEqual({ day: 'sun', at: undefined, picker: '123', film: 456 })
   })
   it('ignores junk days', () => {
     expect(parseState('mnDay:tuesday').day).toBeUndefined()
@@ -135,7 +140,7 @@ describe('wizard views', () => {
   it('each step carries the choices so far', () => {
     expect(json(pickerStep({ day: 'sat' }, start))).toContain('mnPicker:sat')
     expect(json(filmStep({ day: 'sat', picker: '9' }, start, [entry(1)]))).toContain('mnFilm:sat:9')
-    expect(json(confirmStep({ day: 'sat', picker: '9' }, start, entry(5)))).toContain(
+    expect(json(confirmStep({ day: 'sat', picker: '9' }, start, entry(5), true))).toContain(
       'mnConfirm:sat:9:5'
     )
   })
@@ -171,4 +176,125 @@ describe('wizard views', () => {
 
 it('describeError explains missing permissions', () => {
   expect(describeError({ code: 50013 })).toContain('Create Events')
+})
+
+describe('parseTimeOfDay', () => {
+  it('reads 24h, 12h and squashed times', () => {
+    expect(parseTimeOfDay('21:00')).toEqual({ hour: 21, minute: 0 })
+    expect(parseTimeOfDay('9pm')).toEqual({ hour: 21, minute: 0 })
+    expect(parseTimeOfDay('9:30 PM')).toEqual({ hour: 21, minute: 30 })
+    expect(parseTimeOfDay('12am')).toEqual({ hour: 0, minute: 0 })
+    expect(parseTimeOfDay('12pm')).toEqual({ hour: 12, minute: 0 })
+    expect(parseTimeOfDay('2130')).toEqual({ hour: 21, minute: 30 })
+    expect(parseTimeOfDay('7')).toEqual({ hour: 7, minute: 0 })
+  })
+  it('rejects nonsense', () => {
+    expect(parseTimeOfDay('25:00')).toBeNull()
+    expect(parseTimeOfDay('13pm')).toBeNull()
+    expect(parseTimeOfDay('soon')).toBeNull()
+  })
+})
+
+describe('parseWhen', () => {
+  // friday 20 nov 2026, noon in london
+  const now = new Date('2026-11-20T12:00:00Z')
+  const at = (d: string, t = '') => {
+    const r = parseWhen(d, t, london, now)
+    return 'at' in r ? r.at.toISOString() : r.error
+  }
+
+  it('blank day means today at the usual time', () => {
+    expect(at('')).toBe('2026-11-20T20:00:00.000Z')
+    expect(at('tonight', '22:30')).toBe('2026-11-20T22:30:00.000Z')
+  })
+  it('understands tomorrow and weekdays', () => {
+    expect(at('tomorrow', '7pm')).toBe('2026-11-21T19:00:00.000Z')
+    expect(at('Wednesday')).toBe('2026-11-25T20:00:00.000Z')
+    expect(at('fri', '9pm')).toBe('2026-11-20T21:00:00.000Z')
+    // friday at 10am has passed, so next friday
+    expect(at('friday', '10:00')).toBe('2026-11-27T10:00:00.000Z')
+  })
+  it('understands dates', () => {
+    expect(at('2026-12-05', '18:00')).toBe('2026-12-05T18:00:00.000Z')
+    expect(at('27/11')).toBe('2026-11-27T20:00:00.000Z')
+    expect(at('5/1')).toBe('2027-01-05T20:00:00.000Z')
+    expect(at('1/7/27', '20:00')).toBe('2027-07-01T19:00:00.000Z')
+  })
+  it('explains what went wrong', () => {
+    expect(at('', '10am')).toContain('past')
+    expect(at('31/02')).toContain("doesn't exist")
+    expect(at('2028-01-01')).toContain('year away')
+    expect(at('someday')).toContain("couldn't read that date")
+    expect(at('today', 'late')).toContain("couldn't read that time")
+  })
+  it('keeps errors emoji-free for the ephemeral wizard', () => {
+    for (const msg of [at('', '10am'), at('31/02'), at('2028-01-01')]) {
+      expect(msg).not.toMatch(/\p{Extended_Pictographic}/u)
+    }
+  })
+})
+
+describe('impromptu state', () => {
+  it('round-trips an exact time through customIds', () => {
+    const state = { at: 1795291200, picker: '9' }
+    expect(whenToken(state)).toBe('t1795291200')
+    expect(parseState(`mnFilm:${whenToken(state)}:9`)).toMatchObject(state)
+  })
+  it('impromptu customIds stay under 100 chars', () => {
+    const longest = `mnSearchOpen:t9999999999:${'9'.repeat(20)}`
+    expect(longest.length).toBeLessThanOrEqual(100)
+  })
+})
+
+describe('searching inside the wizard', () => {
+  const start = new Date('2026-11-21T20:00:00Z')
+
+  it('the film step always offers search, even with an empty watchlist', () => {
+    const empty = json(filmStep({ day: 'sat', picker: '9' }, start, []))
+    expect(empty).toContain('mnSearchOpen:sat:9')
+    const full = json(filmStep({ day: 'sat', picker: '9' }, start, [entry(1)]))
+    expect(full).toContain('mnSearchOpen:sat:9')
+  })
+
+  it('search results feed back into the same film step', () => {
+    const result = {
+      query: 'jaws',
+      hiddenCount: 0,
+      items: [{ id: 42, name: 'Jaws', releaseYear: 1975, itemTypeId: 15, itemTypeName: 'Movie' }],
+    }
+    const j = json(searchStep({ at: 1795291200, picker: '9' }, start, result))
+    expect(j).toContain('"custom_id":"mnFilm:t1795291200:9"')
+    expect(j).toContain('search again')
+  })
+
+  it('entryFromItem shapes a dtdd item like a watchlist entry', () => {
+    const e = entryFromItem(
+      { id: 42, name: 'Jaws', releaseYear: 1975, itemTypeId: 15, itemTypeName: 'Movie', tmdbId: 578 },
+      'g',
+      '9'
+    )
+    expect(e).toMatchObject({ dtddId: 42, name: 'Jaws', tmdbId: 578, imdbId: null, addedBy: '9' })
+  })
+
+  it('confirm text says whether the film comes off the watchlist', () => {
+    expect(json(confirmStep({ day: 'sat', picker: '9' }, start, entry(5), true))).toContain(
+      'off the watchlist'
+    )
+    expect(json(confirmStep({ day: 'sat', picker: '9' }, start, entry(5), false))).not.toContain(
+      'off the watchlist'
+    )
+  })
+
+  it('wizard screens have no emoji', () => {
+    const screens = [
+      dayStep('oops'),
+      pickerStep({ day: 'sat' }, start),
+      filmStep({ day: 'sat', picker: '9' }, start, [entry(1)]),
+      filmStep({ day: 'sat', picker: '9' }, start, []),
+      confirmStep({ day: 'sat', picker: '9' }, start, entry(5), true),
+    ]
+    for (const s of screens) {
+      expect(json(s)).not.toMatch(/\p{Extended_Pictographic}/u)
+    }
+  })
 })
