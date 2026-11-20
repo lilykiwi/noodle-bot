@@ -18,6 +18,14 @@ client.once(discord.Events.ClientReady, () => {
 client.on(
   discord.Events.InteractionCreate,
   async (interaction: discord.BaseInteraction<discord.CacheType>) => {
+    // autocomplete has a 3s deadline, so handle it before (slow) logging
+    if (interaction.isAutocomplete()) {
+      for (const command of commands.commandList) {
+        await command.Autocomplete?.[interaction.commandName]?.(interaction)
+      }
+      return
+    }
+
     await logging.generateLogString(interaction)
 
     if (interaction.isChatInputCommand()) {
@@ -42,9 +50,11 @@ client.on(
       interaction.isRoleSelectMenu() ||
       interaction.isButton()
     ) {
+      // customIds can carry data after a colon, e.g. "pickReroll:10752"
+      const key = interaction.customId.split(':')[0]
       commands.commandList.forEach((element) => {
-        if (element.Handlers[interaction.customId]) {
-          element.Handlers[interaction.customId](interaction)
+        if (element.Handlers[key]) {
+          element.Handlers[key](interaction)
         }
       })
     }

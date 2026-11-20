@@ -111,3 +111,5 @@ dist
 # Other things
 build
 .idea
+# sqlite database
+data/
