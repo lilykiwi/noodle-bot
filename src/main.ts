@@ -48,6 +48,7 @@ client.on(
     if (
       interaction.isStringSelectMenu() ||
       interaction.isRoleSelectMenu() ||
+      interaction.isUserSelectMenu() ||
       interaction.isButton()
     ) {
       // customIds can carry data after a colon, e.g. "pickReroll:10752"

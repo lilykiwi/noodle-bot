@@ -67,6 +67,10 @@ export function formatWarnings(
 }
 
 export function describeError(error: unknown): string {
+  // discord api error 50013 = the bot is missing a permission
+  if ((error as { code?: unknown })?.code === 50013) {
+    return "i'm missing a permission! make sure i have **Create Events** (and can see the movie night channel) 🙏"
+  }
   const e = error as Partial<DTDDError>
   if (e?.name === 'DTDDError') {
     switch (e.code) {

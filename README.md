@@ -10,6 +10,18 @@ This is a bot I'm working on to power my personal Discord server, written in typ
 
 This command searches for films on [Does the Dog Die](https://www.doesthedogdie.com/), presenting all of the results in a dropdown. Clicking on a dropdown then refreshes the reply with a list of the top 25 categories, implying the film contains material that deserves a content warning. This is useful if a film may contain content which may be disturbing, triggering, upsetting, etc, and is used in the lead-up to movie nights (every Saturday, or more frequent if you're a nerd).
 
+### `/watchlist add|list|remove`
+
+The server's shared list of films to watch. `add` searches DTDD (only visible to you), `remove` autocompletes from the list.
+
+### `/pick`
+
+Picks a random film from the watchlist, with reroll and content warning buttons.
+
+### `/movienight`
+
+A private setup wizard: pick Saturday or Sunday, whose pick it is, and a film from the watchlist. Creates a Discord scheduled event (the bot needs the **Create Events** permission), posts an announcement, and removes the film from the watchlist. Time, timezone and channel are configured in `.env` (see `example.env`).
+
 ## Quick Start
 
 0. Set up a bot at [https://discord.com/developers/applications](https://discord.com/developers/applications) and grab the Token and AppID for later. The token is used for initialising the client, and the AppID is used for registering slash commands.

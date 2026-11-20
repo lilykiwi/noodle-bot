@@ -3,6 +3,7 @@ import {
   ChatInputCommandInteraction,
   ContainerBuilder,
   InteractionContextType,
+  MessageFlags,
   SlashCommandBuilder,
   StringSelectMenuInteraction,
 } from 'discord.js'
@@ -101,9 +102,13 @@ export const watchlist: types.SlashCommand = {
 
   Handlers: {
     watchlist: async (interaction: ChatInputCommandInteraction) => {
-      await interaction.deferReply()
+      const sub = interaction.options.getSubcommand()
+      // searching + picking only shows up for the person running it
+      await interaction.deferReply(
+        sub == 'add' ? { flags: MessageFlags.Ephemeral } : {}
+      )
       try {
-        switch (interaction.options.getSubcommand()) {
+        switch (sub) {
           case 'add':
             return await add(interaction)
           case 'list':
