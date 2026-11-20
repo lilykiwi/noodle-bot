@@ -60,6 +60,29 @@ describe('getItem', () => {
     })
   })
 
+  it('reads tos_required out of json error bodies', async () => {
+    const fetch = mockFetch(403, { error: 'tos_required', message: 'accept' })
+    await expect(getItem(1, { apiKey: 'k', fetch })).rejects.toMatchObject({
+      status: 403,
+      code: 'tos_required',
+    })
+  })
+
+  it('spots tos_required in an html 403 page', async () => {
+    const fetch = mockFetch(403, '<html><p>tos_required</p></html>')
+    await expect(getItem(1, { apiKey: 'k', fetch })).rejects.toMatchObject({
+      status: 403,
+      code: 'tos_required',
+    })
+  })
+
+  it('throws a DTDDError instead of a SyntaxError on html 200s', async () => {
+    const fetch = mockFetch(200, '<!doctype html><html></html>')
+    const err = await searchItems('x', { apiKey: 'k', fetch }).catch((e) => e)
+    expect(err).toBeInstanceOf(DTDDError)
+    expect(err.code).toBe('invalid_response')
+  })
+
   it('copes with non-json error bodies', async () => {
     const fetch = mockFetch(502, '<html>bad gateway</html>')
     await expect(getItem(1, { apiKey: 'k', fetch })).rejects.toMatchObject({

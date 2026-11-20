@@ -74,6 +74,8 @@ export function describeError(error: unknown): string {
       case 'invalid_api_key':
       case 'app_key_not_permitted':
         return "the bot's DTDD api key is missing or invalid :("
+      case 'tos_required':
+        return "the bot's DTDD account needs to accept the API terms of service first!"
       case 'rate_limit_exceeded':
         return "slow down! we're being rate limited, try again in a minute"
       case 'monthly_limit_exceeded':

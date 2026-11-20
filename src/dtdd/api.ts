@@ -69,20 +69,33 @@ async function request<T>(path: string, opts: DTDDOptions): Promise<T> {
     headers: { 'X-API-KEY': opts.apiKey },
   })
 
+  // read as text first: dtdd sometimes answers with an html page (e.g. the
+  // api terms page) instead of json, and resp.json() would just throw
+  const text = await resp.text()
+  let body: unknown
+  try {
+    body = JSON.parse(text)
+  } catch {
+    body = undefined
+  }
+
   if (!resp.ok) {
-    let code = 'http_error'
-    let message = `DTDD responded with HTTP ${resp.status}`
-    try {
-      const body = (await resp.json()) as { error?: string; message?: string }
-      if (body.error) code = body.error
-      if (body.message) message = body.message
-    } catch {
-      // body wasn't json, keep the defaults
-    }
+    const err = (body ?? {}) as { error?: string; message?: string }
+    const code =
+      err.error ?? (text.includes('tos_required') ? 'tos_required' : 'http_error')
+    const message = err.message ?? `DTDD responded with HTTP ${resp.status}`
     throw new DTDDError(resp.status, code, message)
   }
 
-  return (await resp.json()) as T
+  if (body === undefined) {
+    throw new DTDDError(
+      resp.status,
+      'invalid_response',
+      `DTDD returned non-json (${resp.headers.get('content-type') ?? 'unknown type'})`
+    )
+  }
+
+  return body as T
 }
 
 export function searchItems(query: string, opts: DTDDOptions) {
